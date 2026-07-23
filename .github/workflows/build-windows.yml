@@ -1,0 +1,61 @@
+name: Build Windows Executable
+
+on:
+  workflow_dispatch:      # manual "Run workflow" button in the Actions tab
+  push:
+    tags:
+      - "v*"              # also auto-build when you push a version tag, e.g. v1.0.0
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # CPU-only PyTorch build — smaller artifact, no CUDA runtime dependency.
+          # Drop the --index-url line (and let backend/requirements.txt install
+          # the default wheel) if Bosch's target machines have NVIDIA GPUs and
+          # you want CUDA acceleration in the shipped .exe.
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r backend/requirements.txt
+          pip install pyinstaller
+
+      - name: Build executable
+        run: pyinstaller build/annotation_tool.spec
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnnotationTool-windows
+          path: dist/AnnotationTool.exe
+          retention-days: 30
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        run: iscc build\installer.iss
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnnotationTool-windows-installer
+          path: dist_installer/AnnotationToolSetup.exe
+          retention-days: 30
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/AnnotationTool.exe
+            dist_installer/AnnotationToolSetup.exe

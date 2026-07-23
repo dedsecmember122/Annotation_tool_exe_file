@@ -1,0 +1,33 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# PyInstaller build output (keep the tracked .spec and .iss files)
+build/*
+!build/annotation_tool.spec
+!build/installer.iss
+dist/
+dist_installer/
+
+# Secrets / local runtime files
+.env
+launcher.log
+*.db
+*.sqlite3
+
+# Training outputs
+detc-core/runs/*
+!detc-core/runs/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

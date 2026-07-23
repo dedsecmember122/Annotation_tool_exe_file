@@ -1,0 +1,31 @@
+NOTICE
+
+This directory (DETC — custom object-detection model and training code) is
+proprietary software of INSISO TECHNOLOGIES PRIVATE LIMITED. See LICENSE
+for terms.
+
+============================================================================
+License compliance
+============================================================================
+
+This codebase is an original implementation. It does not contain, and was
+not derived from, any AGPL-3.0, GPL-3.0, or other copyleft-licensed source
+code (including, but not limited to, Ultralytics YOLO). No Ultralytics
+package is a dependency of this project.
+
+============================================================================
+Third-party dependencies
+============================================================================
+
+This project depends on the following third-party packages at runtime
+(see pyproject.toml). None are bundled or redistributed with this
+codebase — they are installed separately by the end user.
+
+  - PyTorch (torch)               — BSD-3-Clause License
+  - TorchVision (torchvision)     — BSD-3-Clause License
+  - OpenCV-Python (opencv-python) — Apache License 2.0 / MIT
+    (license terms depend on build variant)
+  - NumPy (numpy)                 — BSD-3-Clause License
+
+No AGPL-3.0, GPL-3.0, or other copyleft-licensed software is used by or
+depended upon by this codebase.

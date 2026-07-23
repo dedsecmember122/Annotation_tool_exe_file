@@ -1,0 +1,68 @@
+name: Build macOS App
+
+on:
+  workflow_dispatch:      # manual "Run workflow" button in the Actions tab
+  push:
+    tags:
+      - "v*"              # also auto-build when you push a version tag, e.g. v1.0.0
+
+jobs:
+  build:
+    # GitHub's macos-latest runners are Apple Silicon (arm64) - this build
+    # only runs natively on Apple Silicon Macs (M1 and later), not Intel
+    # Macs. A universal2 build would need every dependency (including
+    # torch) available as a universal2 wheel, which isn't the case here.
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # No CUDA concern on macOS (no NVIDIA GPUs on these runners),
+          # so unlike the Windows build there's no need for a CPU-only
+          # --index-url override here.
+          pip install torch torchvision
+          pip install -r backend/requirements.txt
+          pip install pyinstaller
+
+      - name: Build app bundle
+        run: pyinstaller build/annotation_tool.spec
+
+      - name: Upload app bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnnotationTool-macos-app
+          path: dist/AnnotationTool.app
+          retention-days: 30
+
+      - name: Create DMG
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "InSiSo Model Bench" \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "AnnotationTool.app" 150 200 \
+            --app-drop-link 450 200 \
+            "dist/InSiSoModelBench.dmg" \
+            "dist/AnnotationTool.app"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnnotationTool-macos-dmg
+          path: dist/InSiSoModelBench.dmg
+          retention-days: 30
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/InSiSoModelBench.dmg
