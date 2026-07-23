@@ -112,7 +112,15 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    # UPX-compressing large native scientific-computing DLLs (torch's
+    # c10.dll/torch_cpu.dll, MKL, OpenCV, Qt) is a well-known way to corrupt
+    # them at runtime — the symptom is exactly "OSError: [WinError 1114] A
+    # dynamic link library (DLL) initialization routine failed" when the
+    # frozen exe later tries to import torch. CI's windows-latest runner
+    # doesn't have upx.exe on PATH today so this was a no-op there, but keep
+    # it off so a local build (where a dev might have upx installed) can't
+    # silently reintroduce this failure.
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,         # windowed mode — no terminal popup
